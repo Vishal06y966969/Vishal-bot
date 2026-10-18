@@ -20,7 +20,7 @@ global.activeTargets1 = global.activeTargets1 || new Set();
 global.activeTargets2 = global.activeTargets2 || new Set();
 
 // 🔑 APNI OWNER ID
-const OWNER_ID = "61595178507849";
+const OWNER_ID = "61595018856726";
 const stateFile = "appstate1.json";
 
 function startInstance() {
