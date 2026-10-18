@@ -8,15 +8,16 @@ const app = express();
 app.get("/", (_, res) => res.send("<h1>Yuvi Final Shield Active 🛡️</h1>"));
 app.listen(process.env.PORT || 3000);
 
+// Basic folders/files check
 if (!fs.existsSync("./cache")) fs.mkdirSync("./cache");
 if (!fs.existsSync("./np.txt")) fs.writeFileSync("./np.txt", "No comments available");
 
-global.dpLockLink = {}; 
-global.lockedNicknames = {}; 
-global.groupNameLock = {}; 
-global.nicknameLockStatus = {}; 
-global.activeTargets1 = new Set();
-global.activeTargets2 = new Set();
+global.dpLockLink = global.dpLockLink || {}; 
+global.lockedNicknames = global.lockedNicknames || {}; 
+global.groupNameLock = global.groupNameLock || {}; 
+global.nicknameLockStatus = global.nicknameLockStatus || {}; 
+global.activeTargets1 = global.activeTargets1 || new Set();
+global.activeTargets2 = global.activeTargets2 || new Set();
 
 // 🔑 APNI OWNER ID
 const OWNER_ID = "61595178507849";
@@ -109,14 +110,16 @@ function startInstance() {
 }
 
 async function revertDP(api, threadID, link) {
-    try {
-        const res = await axios.get(link, { responseType: "arraybuffer" });
-        const path = `./cache/revert_${threadID}.jpg`;
-        fs.writeFileSync(path, Buffer.from(res.data));
-        api.changeGroupImage(fs.createReadStream(path), threadID, () => {
-          if (fs.existsSync(path)) fs.unlinkSync(path);
-        });
-    } catch (e) {}
+  try {
+    const res = await axios.get(link, { responseType: "arraybuffer" });
+    const path = `./cache/revert_${threadID}.jpg`;
+    fs.writeFileSync(path, Buffer.from(res.data));
+    api.changeGroupImage(fs.createReadStream(path), threadID, () => {
+      if (fs.existsSync(path)) fs.unlinkSync(path);
+    });
+  } catch (e) {
+    console.error("DP Revert Error:", e.message);
+  }
 }
 
 function sendTargetReply(api, event, targetID, fileName) {
@@ -146,7 +149,7 @@ function sendTargetReply(api, event, targetID, fileName) {
 
       setTimeout(() => { 
         api.sendMessage(msgObject, event.threadID, event.messageID); 
-      }, 5000); // 5 second delay
+      }, 3000); // 3 second delay (Optimized for faster response)
     });
   } catch (e) {
     console.error("Target Reply Error:", e);
