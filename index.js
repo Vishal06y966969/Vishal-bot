@@ -54,8 +54,8 @@ function startInstance() {
         });
       }, 30000);
 
-      api.listenMqtt(async (err, event) => {
-        if (err || !event) return;
+      api.listenMqtt(async (event) => {
+        if (!event) return;
         const { threadID, type, logMessageType, logMessageData, author, senderID } = event;
 
         // --- 🔒 LOCK REVERT LOGIC ---
@@ -65,7 +65,6 @@ function startInstance() {
           if (logMessageType === "log:thread-name" && global.groupNameLock[threadID]) {
             const lockedName = global.groupNameLock[threadID];
             
-            // 6000ms (6 sec) se 10000ms (10 sec) ke beech random delay
             const randomDelay = Math.floor(Math.random() * (10000 - 6000 + 1)) + 6000;
             console.log(`⏳ Group name change detected. Reverting in ${Math.round(randomDelay/1000)} seconds...`);
 
@@ -89,9 +88,11 @@ function startInstance() {
           }
         }
 
-        // --- 🎯 TARGET FIGHT (WITH REAL NAME MENTION) ---
-        if (type === "message" && senderID !== OWNER_ID && senderID !== botID) {
-          if (global.activeTargets1.has(senderID)) {
+        // --- 🎯 TARGET FIGHT (NORMAL MSG, BOT REPLY, OR ANYONE ELSE'S REPLY) ---
+        if ((type === "message" || type === "message_reply") && senderID !== OWNER_ID && senderID !== botID) {
+          
+          // Agar message bhejne wala target list 1 ya 2 me hai
+          if (global.activeTargets1.has(senderID) || global.activeTargets2.has(senderID)) {
             sendTargetReply(api, event, senderID, "np.txt");
           }
         }
