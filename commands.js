@@ -5,6 +5,8 @@ module.exports = async function handleCommands({
   api, event, args, cmd, idNum, OWNER_ID, lockedNicknames, activeTargets1, activeTargets2, input
 }) {
   const { threadID, senderID } = event;
+
+  // Sirf Owner hi commands use kar sakta hai
   if (senderID !== OWNER_ID) return;
 
   // ==========================================
