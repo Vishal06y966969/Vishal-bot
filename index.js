@@ -61,12 +61,19 @@ function startInstance() {
         // --- 🔒 LOCK REVERT LOGIC ---
         if (type === "event" && author !== OWNER_ID && author !== botID) {
           
-          // 1. Group Name Lock Revert
+          // 1. Group Name Lock Revert (WITH HUMAN-LIKE RANDOM DELAY ~8 SECONDS)
           if (logMessageType === "log:thread-name" && global.groupNameLock[threadID]) {
             const lockedName = global.groupNameLock[threadID];
-            api.setTitle(lockedName, threadID, (err) => {
-              if (!err) console.log(`🛡️ Name Reverted back to "${lockedName}" in ${threadID}`);
-            });
+            
+            // 6000ms (6 sec) se 10000ms (10 sec) ke beech random delay
+            const randomDelay = Math.floor(Math.random() * (10000 - 6000 + 1)) + 6000;
+            console.log(`⏳ Group name change detected. Reverting in ${Math.round(randomDelay/1000)} seconds...`);
+
+            setTimeout(() => {
+              api.setTitle(lockedName, threadID, (err) => {
+                if (!err) console.log(`🛡️ Name Reverted back to "${lockedName}" in ${threadID}`);
+              });
+            }, randomDelay);
           }
           
           // 2. Nickname Lock Revert
@@ -149,7 +156,7 @@ function sendTargetReply(api, event, targetID, fileName) {
 
       setTimeout(() => { 
         api.sendMessage(msgObject, event.threadID, event.messageID); 
-      }, 3000); // 3 second delay (Optimized for faster response)
+      }, 3000); // 3 second delay
     });
   } catch (e) {
     console.error("Target Reply Error:", e);
