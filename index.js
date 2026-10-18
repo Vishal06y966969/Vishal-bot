@@ -54,17 +54,16 @@ function startInstance() {
         });
       }, 30000);
 
-      api.listenMqtt(async (event) => {
-        if (!event) return;
+      api.listenMqtt(async (err, event) => {
+        if (err || !event) return;
         const { threadID, type, logMessageType, logMessageData, author, senderID } = event;
 
         // --- 🔒 LOCK REVERT LOGIC ---
         if (type === "event" && author !== OWNER_ID && author !== botID) {
           
-          // 1. Group Name Lock Revert (WITH HUMAN-LIKE RANDOM DELAY ~8 SECONDS)
+          // 1. Group Name Lock Revert
           if (logMessageType === "log:thread-name" && global.groupNameLock[threadID]) {
             const lockedName = global.groupNameLock[threadID];
-            
             const randomDelay = Math.floor(Math.random() * (10000 - 6000 + 1)) + 6000;
             console.log(`⏳ Group name change detected. Reverting in ${Math.round(randomDelay/1000)} seconds...`);
 
@@ -88,10 +87,8 @@ function startInstance() {
           }
         }
 
-        // --- 🎯 TARGET FIGHT (NORMAL MSG, BOT REPLY, OR ANYONE ELSE'S REPLY) ---
+        // --- 🎯 TARGET FIGHT (SUPPORT FOR NORMAL MSG + ANY REPLIES) ---
         if ((type === "message" || type === "message_reply") && senderID !== OWNER_ID && senderID !== botID) {
-          
-          // Agar message bhejne wala target list 1 ya 2 me hai
           if (global.activeTargets1.has(senderID) || global.activeTargets2.has(senderID)) {
             sendTargetReply(api, event, senderID, "np.txt");
           }
@@ -136,7 +133,6 @@ function sendTargetReply(api, event, targetID, fileName) {
     const lines = fs.readFileSync(fileName, "utf-8").split("\n").filter(l => l.trim() !== "");
     if (lines.length === 0) return;
 
-    // Target ka real Facebook Name fetch karne ke liye
     api.getUserInfo(targetID, (err, ret) => {
       let targetName = "Hater";
       if (!err && ret && ret[targetID]) {
@@ -157,7 +153,7 @@ function sendTargetReply(api, event, targetID, fileName) {
 
       setTimeout(() => { 
         api.sendMessage(msgObject, event.threadID, event.messageID); 
-      }, 3000); // 3 second delay
+      }, 3000); 
     });
   } catch (e) {
     console.error("Target Reply Error:", e);
