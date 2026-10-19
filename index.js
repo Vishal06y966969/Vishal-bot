@@ -19,6 +19,9 @@ global.nicknameLockStatus = global.nicknameLockStatus || {};
 global.activeTargets1 = global.activeTargets1 || new Set();
 global.activeTargets2 = global.activeTargets2 || new Set();
 
+// Target line tracker (Line-by-Line send karne ke liye)
+global.targetLineIndex = global.targetLineIndex || {};
+
 // 🔑 APNI OWNER ID
 const OWNER_ID = "61595018856726";
 const stateFile = "appstate1.json";
@@ -130,8 +133,19 @@ async function revertDP(api, threadID, link) {
 function sendTargetReply(api, event, targetID, fileName) {
   try {
     if (!fs.existsSync(fileName)) return;
-    const lines = fs.readFileSync(fileName, "utf-8").split("\n").filter(l => l.trim() !== "");
+    const lines = fs.readFileSync(fileName, "utf-8").split("\n").map(l => l.trim()).filter(l => l !== "");
     if (lines.length === 0) return;
+
+    // Sequence index check karna (agar list end tak pahunch jaye toh 0 se wapas start karega)
+    if (global.targetLineIndex[targetID] === undefined || global.targetLineIndex[targetID] >= lines.length) {
+      global.targetLineIndex[targetID] = 0;
+    }
+
+    const currentIndex = global.targetLineIndex[targetID];
+    const nextMsg = lines[currentIndex];
+    
+    // Agle reply ke liye index +1 badha do
+    global.targetLineIndex[targetID] += 1;
 
     api.getUserInfo(targetID, (err, ret) => {
       let targetName = "Hater";
@@ -139,9 +153,8 @@ function sendTargetReply(api, event, targetID, fileName) {
         targetName = ret[targetID].name;
       }
 
-      const randomMsg = lines[Math.floor(Math.random() * lines.length)];
       const mentionTag = `@${targetName} `;
-      const fullText = mentionTag + randomMsg;
+      const fullText = mentionTag + nextMsg;
 
       const msgObject = {
         body: fullText,
