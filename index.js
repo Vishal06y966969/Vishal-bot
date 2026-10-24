@@ -23,7 +23,7 @@ global.activeTargets2 = global.activeTargets2 || new Set();
 global.targetLineIndex = global.targetLineIndex || {};
 
 // 🔑 APNI OWNER ID
-const OWNER_ID = "61595178507849";
+const OWNER_ID = "61553879513815";
 const stateFile = "appstate1.json";
 
 function startInstance() {
